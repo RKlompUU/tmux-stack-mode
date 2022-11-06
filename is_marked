@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+pane=$1
+
+echo "`tmux show @binder_mode$pane` ; $pane" >> /tmp/tmux
+if [[ `tmux show "@binder_mode$pane"` != '' ]]; then
+    echo 'res: true' >> /tmp/tmux
+    exit 0
+fi
+echo 'res: false' >> /tmp/tmux
+exit 1

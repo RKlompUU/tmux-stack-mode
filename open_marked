@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+pane=$1
+
+vsize=`TMUX_PANE=$pane vertical_size`
+
+for p in `TMUX_PANE=$pane vertical_panes`; do
+  [[ "$p" == "$pane" ]] && continue
+  tmux resize-pane -t $p '-y 0%'
+done
+
+tmux resize-pane -t $pane "-y $vsize"

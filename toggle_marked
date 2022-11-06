@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+pane=$1
+
+panes=`TMUX_PANE=$pane vertical_panes`
+if [[ $? -ne 0 ]]; then
+  echo $panes
+  for p in `tmux list-panes | awk '{print $7}'`; do
+    tmux set -uF @binder_mode$p
+  done
+  exit 0
+fi
+echo "panes: $panes" >> /tmp/tmux
+
+if is_marked $pane; then
+  for p in $panes; do
+    echo $p >> /tmp/tmux
+    tmux set -uF @binder_mode$p
+  done
+
+  vsize=`TMUX_PANE=$pane vertical_size sum`
+  vcount=`TMUX_PANE=$pane vertical_size count`
+  balanced_size=`echo $vsize/$vcount | bc`
+  psize=`echo ($vsize - $balanced_size*$vcount) + $balanced_size | bc`
+  for p in `TMUX_PANE=$pane vertical_panes`; do
+    tmux resize-pane -t $p "-y $balanced_size"
+  done
+else
+  for p in $panes; do
+    echo $p >> /tmp/tmux
+    tmux set -F @binder_mode$p m
+  done
+  open_marked $pane
+fi

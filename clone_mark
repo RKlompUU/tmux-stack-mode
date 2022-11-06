@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+target_pane=$1
+
+clone_pane=`TMUX_PANE=$target_pane vertical_panes | head -n 1`
+if [[ $? -ne 0 || $clone_pane == '' ]]; then
+  echo $clone_pane
+  exit 0
+fi
+
+echo "?? $target_pane; $clone_pane" >> /tmp/tmux
+
+if is_marked $clone_pane; then
+  tmux set -F @binder_mode$target_pane m
+  open_marked $target_pane
+fi
