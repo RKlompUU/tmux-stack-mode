@@ -1,6 +1,6 @@
-# Tmux binder mode
+# Tmux stack mode
 
-An adhoc proof of concept for a binder mode in tmux similar to i3's stack mode.
+An adhoc proof of concept for a stack mode in tmux similar to i3's stack mode.
 
 No automated installation yet. To install, add the binaries to your PATH and add the following to your .tmux.conf:
 
