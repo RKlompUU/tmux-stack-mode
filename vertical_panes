@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+layout="`tmux list-windows -F '#{window_active} #{window_layout}' | grep -E '^1'`"
+
+if echo "$layout" | grep -q '\['; then
+  vertical_layout=`
+    echo "$layout" | \
+      grep -Eo "\[[^[]+${TMUX_PANE#%}((,|})[^]]*]|])"`
+else
+  vertical_layout=`
+    echo "$layout" | \
+      awk -v OFS=, -F',' '{$1=""; print $0}' | \
+      sed 's/^,//'`
+fi
+
+echo "TMUX PANE=$TMUX_PANE, layout: $layout, vertical: $vertical_layout" >> /tmp/tmux
+
+bracket_opens="${vertical_layout//[^\[]}"
+bracket_closes="${vertical_layout//[^\]]}"
+
+[[ ${#bracket_opens} -ne ${#bracket_closes} ]] && {
+  echo $layout
+  echo $vertical_layout
+
+  echo 'cant fold this layout'
+  exit 1
+}
+
+echo "$vertical_layout" |
+  sed 's/{/,-,/g' | \
+  awk -F',' '{for(i=4;i<=NF;i+=4) print $i}' | \
+  sed 's/[]}]*$//' | \
+  grep -v '-' | \
+  sed 's/^/%/'

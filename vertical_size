@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+layout="`tmux list-windows -F '#{window_active} #{window_layout}' | grep -E '^1'`"
+
+if echo "$layout" | grep -q '\['; then
+  vertical_layout=`
+    echo "$layout" | \
+      grep -Eo "\[[^[]+${TMUX_PANE#%}((,|})[^]]*]|])"`
+else
+  vertical_layout=`
+    echo "$layout" | \
+      awk -v OFS=, -F',' '{$1=""; print $0}' | \
+      sed 's/^,//'`
+fi
+
+echo "VERTICAL SIZE? $TMUX_PANE: $vertical_layout" >> /tmp/tmux
+
+raw_out="`
+  echo "$vertical_layout" | \
+    sed 's/{[^}]*}/,-/g' | \
+    awk -F',' '{for(i=1;i<=NF;i+=4) print $i}' | \
+    sed 's/^\[//' | \
+    awk -F'x' '{print $2}'`"
+
+case ${1:-sum} in
+  sum)
+    echo "$raw_out" | \
+      paste -sd+ | \
+      bc
+    ;;
+  count)
+    echo "$raw_out" | \
+      wc -l
+    ;;
+esac
